@@ -1,0 +1,74 @@
+﻿@page
+@inject IHttpContextAccessor _context;
+@inject IDataProtectionProvider _dataProtectionProvider;
+@using Microsoft.AspNetCore.DataProtection
+@model WebApplication2.Pages.UserDetailsModel
+@{
+}
+<link rel="stylesheet" href="path/to/bootstrap-datepicker.css">
+<script src="path/to/bootstrap-datepicker.js"></script>
+<script src="path/to/bootstrap-datepicker.en.min.js"></script>
+<link rel="stylesheet" href="path/to/bootstrap.min.css">
+<link rel="stylesheet" href="path/to/zxcvbn.min.css">
+<script src="path/to/jquery.min.js"></script>
+<script src="path/to/bootstrap.min.js"></script>
+<script src="path/to/zxcvbn.min.js"></script>
+@{
+    // Retrieve the protected email from the session
+    var emailfromdatabase = _context.HttpContext.Session.GetString("User_Email");
+    var whoami = _context.HttpContext.Session.GetString("WAI");
+    var DOB = _context.HttpContext.Session.GetString("DOB");
+    var First_Name = _context.HttpContext.Session.GetString("First_Name");
+    var Last_Name = _context.HttpContext.Session.GetString("Last_Name");
+    var Nric = _context.HttpContext.Session.GetString("NRIC");
+
+    var get_whoami = "";
+    var get_DOB = "";
+    var get_name = "";
+    var get_email = "";
+    var get_nric = "";
+    if (emailfromdatabase != null && Nric != null && whoami != null)
+    {
+
+        // Decrypt the protected email using the data protection provider
+        var IC_protector = _dataProtectionProvider.CreateProtector("NRIC");
+        var protector = _dataProtectionProvider.CreateProtector("EmailProtection");
+
+        get_whoami = System.Web.HttpUtility.HtmlDecode(whoami);
+        get_email = protector.Unprotect(emailfromdatabase);
+        get_nric = IC_protector.Unprotect(Nric);
+
+
+    }
+    else
+    {
+        get_email = "";
+    }
+
+
+
+    if (whoami != null && DOB != null && First_Name != null && Last_Name != null)
+    {
+        get_whoami = whoami;
+        get_DOB = DOB;
+        get_name = First_Name + ' ' + Last_Name;
+    }
+    else
+    {
+        get_whoami = "";
+        get_DOB = "";
+        get_name = "";
+
+    }
+}
+
+<div class="text-center">
+    <h1 class="display-4">User Details</h1>
+    <p>Email: @get_email</p>
+    <p>Name: @get_name</p>
+    <p>Date of Birth: @get_DOB</p>
+    <p>Who Am I: @Html.Raw(System.Web.HttpUtility.HtmlDecode(get_whoami))</p>
+    <p>NRIC: @get_nric</p>
+
+    @* <p>Student Id: @_context.HttpContext.Session.GetInt32("StudentId")</p> *@
+</div>
